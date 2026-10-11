@@ -1,0 +1,589 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thread — The Human Connection Map</title>
+<style>
+:root {
+  --bg:#050b19; --panel:#0b1530; --card:#101d3b;
+  --text:#eef4ff; --muted:#9aafd0; --line:#22365e;
+  --cyan:#42f0e1; --purple:#aa85ff; --pink:#ff67bc;
+}
+body.light {
+  --bg:#edf3fb; --panel:#fff; --card:#f7f9ff;
+  --text:#152442; --muted:#586986; --line:#d5dfef;
+  --cyan:#007e81; --purple:#7151cb; --pink:#bd337f;
+}
+* {box-sizing:border-box}
+html {scroll-behavior:smooth}
+body {
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,sans-serif;transition:.2s;
+}
+button,input,textarea,select {font:inherit}
+button {
+  cursor:pointer;border:1px solid var(--line);border-radius:10px;
+  padding:10px 13px;background:var(--card);color:var(--text);
+}
+button:hover {border-color:var(--cyan)}
+a {color:inherit;text-decoration:none}
+header {
+  position:sticky;top:0;z-index:5;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:14px 4%;background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
+.brand {font-size:25px;font-weight:800;letter-spacing:-1px}
+.brand b {color:var(--cyan)}
+header nav {display:flex;gap:9px;flex-wrap:wrap}
+header nav a {padding:10px;color:var(--muted);font-size:14px}
+header nav a:hover {color:var(--cyan)}
+.wrap {max-width:1450px;margin:auto;padding:20px}
+.layout {
+  display:grid;grid-template-columns:240px minmax(0,1fr) 300px;
+  gap:14px;align-items:start;
+}
+.panel {
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;overflow:hidden;
+}
+.pad {padding:17px}
+.hero {
+  padding:22px 18px;background:
+  radial-gradient(ellipse at top right,#463079 0,transparent 65%),
+  linear-gradient(145deg,#122653,#0a1530);
+}
+.hero h1 {font-size:32px;line-height:1.12;margin:12px 0}
+.hero p {font-size:14px;line-height:1.7;color:#c0d1f0}
+.eyebrow {
+  font-size:11px;letter-spacing:2px;color:var(--cyan);font-weight:bold;
+}
+.primary {background:var(--cyan);color:#071522;font-weight:bold;border:0}
+.full {width:100%}
+h2 {font-size:20px;margin:8px 0 13px}
+h3 {font-size:15px;margin:7px 0}
+p {line-height:1.55}
+.muted {color:var(--muted);font-size:13px}
+.theme-list {display:grid;gap:6px;margin-top:15px}
+.theme {
+  display:flex;align-items:center;justify-content:space-between;gap:7px;
+  text-align:left;width:100%;font-size:12px;background:transparent;
+}
+.theme.active {background:var(--card);border-color:var(--cyan)}
+.theme span:first-child {display:flex;align-items:center;gap:9px}
+.bubble {
+  display:inline-grid;place-items:center;width:29px;height:29px;
+  border-radius:50%;font-size:15px;background:#242653;flex-shrink:0;
+}
+.map-head {padding:18px 18px 0}
+.map-head p {max-width:620px}
+.map {
+  height:465px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 50%,#11274b 0%,#08152f 65%,#050d20 100%);
+}
+.map:before {
+  content:"";position:absolute;inset:0;opacity:.24;
+  background-image:radial-gradient(#547ab2 1px,transparent 1px);
+  background-size:25px 25px;
+}
+#network {position:absolute;inset:0;width:100%;height:100%}
+.connection {
+  fill:none;stroke-width:1.5;opacity:.72;
+  stroke-dasharray:5 7;animation:flow 18s linear infinite;
+}
+@keyframes flow {to{stroke-dashoffset:-240}}
+.node {cursor:pointer;outline:none}
+.node circle {transition:r .2s,opacity .2s}
+.node:hover circle {opacity:.8}
+.node:focus circle {stroke:white;stroke-width:3}
+.node-label {
+  fill:#e8f2ff;font-size:10px;text-anchor:middle;
+  pointer-events:none;
+}
+.map-note {
+  position:absolute;bottom:12px;left:12px;right:12px;
+  padding:10px;background:#07132be8;border:1px solid #304b7b;
+  border-radius:10px;color:#eaf3ff;font-size:12px;
+}
+.stats {display:flex;gap:8px;margin:14px 0}
+.stat {flex:1;padding:12px;background:var(--card);border-radius:10px}
+.stat strong {display:block;color:var(--cyan);font-size:20px}
+.stat span {font-size:11px;color:var(--muted)}
+.story {
+  background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:13px;margin-top:10px;
+}
+.tag {font-size:10px;color:var(--cyan);text-transform:uppercase}
+.story p {font-size:12px;color:var(--muted);margin:8px 0}
+.story .meta {font-size:11px;color:var(--muted)}
+.text-button {
+  background:transparent;border:0;padding:5px 0;color:var(--cyan);
+}
+.section {margin-top:25px}
+.section-head {
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap;margin-bottom:12px;
+}
+.featured {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+.featured .story {margin:0}
+input,textarea,select {
+  width:100%;padding:12px;background:var(--bg);color:var(--text);
+  border:1px solid var(--line);border-radius:9px;min-width:0;
+}
+label {font-size:12px;color:var(--muted);display:block;margin:12px 0 6px}
+textarea {resize:vertical;min-height:95px}
+.form-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.form-grid .all {grid-column:1/-1}
+.bridge {
+  border:1px solid #56428e;
+  background:linear-gradient(135deg,#211945,#0d1935);
+  border-radius:12px;padding:15px;margin-top:12px;
+}
+footer {padding:30px;text-align:center;color:var(--muted);font-size:12px}
+.hidden {display:none!important}
+dialog {
+  width:min(570px,calc(100% - 24px));max-height:85vh;overflow:auto;
+  border:1px solid var(--line);border-radius:16px;
+  background:var(--panel);color:var(--text);padding:22px;
+}
+dialog::backdrop {background:#000b}
+.dialog-actions {display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#toast {
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  background:var(--cyan);color:#071522;padding:12px 18px;
+  border-radius:10px;display:none;z-index:20;font-size:13px;
+}
+@media(max-width:1050px) {
+  .layout {grid-template-columns:210px minmax(0,1fr)}
+  .right {grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .right>.pad {border:1px solid var(--line);border-radius:14px}
+  .featured {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px) {
+  .wrap {padding:10px}
+  header {padding:12px}
+  .layout {grid-template-columns:1fr}
+  .right {grid-column:auto;display:block}
+  .right>.pad {margin-top:12px}
+  .map {height:350px}
+  .featured {grid-template-columns:1fr}
+  .form-grid {grid-template-columns:1fr}
+  .form-grid .all {grid-column:auto}
+  .hero h1 {font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="#"><b>∞</b> Thread.</a>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#map">Connection map</a>
+    <a href="#stories">Stories</a>
+    <a href="#submit">+ Add story</a>
+  </nav>
+  <button id="themeToggle" aria-label="Switch theme">☀ / ☾</button>
+</header>
+
+<main class="wrap" id="home">
+<div class="layout">
+
+<!-- LEFT: PURPOSE AND FEELING FILTERS -->
+<aside class="panel">
+  <div class="hero">
+    <div class="eyebrow">THE HUMAN CONNECTION MAP</div>
+    <h1>Different ages.<br>Same feelings.</h1>
+    <p>Somewhere in the world, someone may understand an experience you thought was yours alone.</p>
+    <button class="primary full" onclick="go('submit')">＋ Share your story</button>
+  </div>
+  <div class="pad">
+    <h2>Explore by feeling</h2>
+    <p class="muted">Choose a theme to discover connected experiences.</p>
+    <div class="theme-list" id="themeList"></div>
+    <button class="theme active" data-theme="All" style="margin-top:8px">
+      <span>🌐 All experiences</span>
+    </button>
+  </div>
+</aside>
+
+<!-- CENTRE: INTERACTIVE CONNECTION MAP -->
+<section class="panel" id="map">
+  <div class="map-head">
+    <div class="eyebrow">A LIVING UNIVERSE OF EXPERIENCE</div>
+    <h2>Explore the threads</h2>
+    <p class="muted">Each glowing point represents an illustrative story. Click a point to explore its theme and discover experiences at other ages.</p>
+  </div>
+  <div class="map">
+    <svg id="network" viewBox="0 0 700 450"
+      preserveAspectRatio="xMidYMid meet"
+      role="img" aria-label="Interactive map of connected story themes"></svg>
+    <div class="map-note" id="mapMessage">
+      ✦ Select a glowing point to explore a human experience.
+    </div>
+  </div>
+  <div class="pad">
+    <div class="stats">
+      <div class="stat"><strong id="storyCount">0</strong><span>Experiences</span></div>
+      <div class="stat"><strong id="themeCount">0</strong><span>Themes</span></div>
+      <div class="stat"><strong>∞</strong><span>Possibilities</span></div>
+    </div>
+    <p class="muted">The map connects stories by shared themes, not by assuming everyone feels the same.</p>
+  </div>
+</section>
+
+<!-- RIGHT: SELECTED STORY AND GENERATION BRIDGE -->
+<aside class="right">
+  <div class="panel pad">
+    <div class="eyebrow">SELECTED EXPERIENCE</div>
+    <div id="selectedStory">
+      <h2>Every point has a story</h2>
+      <p class="muted">Select a point on the map to start exploring.</p>
+    </div>
+  </div>
+  <div class="panel pad">
+    <div class="eyebrow">GENERATION BRIDGE</div>
+    <h2>Across the years</h2>
+    <p class="muted">Explore how different stages of life can bring different perspectives to a shared feeling.</p>
+    <div id="connections"></div>
+    <div class="bridge">
+      <strong>Leave a thoughtful message</strong>
+      <p class="muted">Write a kind reflection inspired by a story. In this local prototype, it is saved on your device, not sent to another person.</p>
+      <button class="full" onclick="openMessage()">Write a reflection ↗</button>
+    </div>
+  </div>
+</aside>
+</div>
+
+<!-- DISCOVERY FEED -->
+<section class="section" id="stories">
+  <div class="section-head">
+    <div><div class="eyebrow">STORIES THAT RESONATE</div><h2>Discover experiences</h2></div>
+    <input id="search" placeholder="Search feelings, stories, themes..."
+      style="max-width:330px" aria-label="Search stories">
+  </div>
+  <div id="storyFeed" class="featured"></div>
+  <p id="empty" class="muted hidden">No matching stories. Try another feeling or search.</p>
+</section>
+
+<!-- STORY SUBMISSION -->
+<section class="section panel pad" id="submit">
+  <div class="eyebrow">YOUR EXPERIENCE MATTERS</div>
+  <h2>Add your story to Thread</h2>
+  <p class="muted">You do not need to write perfectly. Share only what you feel comfortable making public.</p>
+
+  <form id="storyForm">
+    <div class="form-grid">
+      <div>
+        <label for="age">Age</label>
+        <input id="age" type="number" min="13" max="120" required placeholder="e.g. 16">
+      </div>
+      <div>
+        <label for="stage">Life stage</label>
+        <select id="stage" required>
+          <option value="Student">Student</option>
+          <option value="Young adult">Young adult</option>
+          <option value="Working adult">Working adult</option>
+          <option value="Parent">Parent</option>
+          <option value="Retired">Retired</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="all">
+        <label for="title">Story title</label>
+        <input id="title" maxlength="90" required placeholder="A few words about your experience">
+      </div>
+      <div>
+        <label for="feeling">Main feeling or theme</label>
+        <select id="feeling" required>
+          <option>Future & Dreams</option>
+          <option>Anxiety & Uncertainty</option>
+          <option>Family & Relationships</option>
+          <option>Work & Career</option>
+          <option>Growing & Change</option>
+          <option>Identity & Belonging</option>
+          <option>Hope & Resilience</option>
+        </select>
+      </div>
+      <div>
+        <label for="place">Place (optional)</label>
+        <input id="place" maxlength="60" placeholder="e.g. Kerala, India">
+      </div>
+      <div class="all">
+        <label for="bodyText">Your experience</label>
+        <textarea id="bodyText" maxlength="1800" required
+          placeholder="What did you experience? What would you want someone at another age to understand?"></textarea>
+      </div>
+      <div class="all">
+        <label style="display:flex;gap:9px;align-items:flex-start">
+          <input id="consent" type="checkbox" required style="width:auto;margin-top:3px">
+          <span>I understand this prototype stores stories locally on this device. I have not included private information about myself or anyone else.</span>
+        </label>
+      </div>
+    </div>
+    <button class="primary" type="submit">Add experience to my map ↗</button>
+  </form>
+</section>
+
+<section class="section panel pad" id="reflections">
+  <div class="eyebrow">A BRIDGE BETWEEN GENERATIONS</div>
+  <h2>Reflections inspired by stories</h2>
+  <p class="muted">These notes are stored in this browser. A future online version could let consenting authors exchange messages securely.</p>
+  <div id="reflectionList"></div>
+</section>
+
+<footer>
+  <div class="brand">∞ Thread.</div>
+  <p>Different lives. Shared experiences. More ways to understand one another.</p>
+  <p>Prototype stories are fictional illustrations. No real community submissions are included.</p>
+</footer>
+</main>
+
+<dialog id="messageDialog">
+  <h2>Write a reflection</h2>
+  <p class="muted" id="messagePrompt">What would you like someone from another generation to understand?</p>
+  <form id="messageForm">
+    <label for="reflection">Your message</label>
+    <textarea id="reflection" maxlength="500" required placeholder="I hope someone reading this knows..."></textarea>
+    <div class="dialog-actions" style="margin-top:14px">
+      <button type="button" onclick="messageDialog.close()">Cancel</button>
+      <button class="primary" type="submit">Save reflection</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const examples = [
+ {id:"e1",age:16,stage:"Student",title:"I'm scared of my future",
+  theme:"Future & Dreams",place:"Kerala, India",
+  text:"Sometimes I worry about who I will become. I am not sure which path to choose, and I am afraid of making the wrong decision.",
+  x:140,y:120,color:"#a77bff"},
+ {id:"e2",age:42,stage:"Working adult",title:"I worried about every decision",
+  theme:"Future & Dreams",place:"Illustrative example",
+  text:"At 42, I remember worrying that one wrong decision would change my whole future. Life took turns I could not have predicted.",
+  x:350,y:225,color:"#40e8e1"},
+ {id:"e3",age:68,stage:"Retired",title:"I wish I had known sooner",
+  theme:"Future & Dreams",place:"Illustrative example",
+  text:"At 68, I wish I had known how much life could change. Some choices mattered, but many things I worried about unfolded differently.",
+  x:565,y:120,color:"#ff73c6"},
+ {id:"e4",age:38,stage:"Parent",title:"Watching someone grow",
+  theme:"Family & Relationships",place:"Illustrative example",
+  text:"As a parent, I sometimes worry about whether I am doing enough. I remember being young and unsure, too.",
+  x:510,y:330,color:"#ffb45d"},
+ {id:"e5",age:25,stage:"Young adult",title:"Learning to begin again",
+  theme:"Growing & Change",place:"Illustrative example",
+  text:"I thought everyone else had life figured out. I am learning that changing direction can be part of growing.",
+  x:185,y:330,color:"#5cc9ff"},
+ {id:"e6",age:51,stage:"Working adult",title:"A career can change",
+  theme:"Work & Career",place:"Illustrative example",
+  text:"I once believed my first career choice would define me forever. Experience taught me that people can learn and change.",
+  x:350,y:65,color:"#67e69b"},
+ {id:"e7",age:19,stage:"Student",title:"Where do I belong?",
+  theme:"Identity & Belonging",place:"Illustrative example",
+  text:"I am still discovering what matters to me. It helps to remember that understanding yourself can take time.",
+  x:350,y:390,color:"#75a5ff"},
+ {id:"e8",age:34,stage:"Other",title:"Taking one day at a time",
+  theme:"Anxiety & Uncertainty",place:"Illustrative example",
+  text:"Uncertainty has not disappeared as I have grown older. I have learned to take things one step at a time.",
+  x:90,y:255,color:"#49d5dd"},
+ {id:"e9",age:60,stage:"Other",title:"There is still room for hope",
+  theme:"Hope & Resilience",place:"Illustrative example",
+  text:"Life did not follow my original plan, but unexpected changes brought friendships and opportunities I could never have planned.",
+  x:620,y:245,color:"#f0a2ff"}
+];
+
+const themes = [
+ ["Future & Dreams","⭐","#a77bff"],
+ ["Anxiety & Uncertainty","◉","#49d5dd"],
+ ["Family & Relationships","♥","#ff67bc"],
+ ["Work & Career","▣","#ffb45d"],
+ ["Growing & Change","✦","#5cc9ff"],
+ ["Identity & Belonging","●","#75a5ff"],
+ ["Hope & Resilience","✿","#67e69b"]
+];
+
+function load(key,fallback) {
+ try {
+  const v=localStorage.getItem(key);
+  return v===null?fallback:JSON.parse(v);
+ } catch(e) { return fallback; }
+}
+let stories=load("thread-v1-stories",examples);
+let reflections=load("thread-v1-reflections",[]);
+let selectedTheme="All";
+let selectedId="e1";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+})[c]);
+function persist(key,data) {
+ try {
+  localStorage.setItem(key,JSON.stringify(data));
+  return true;
+ } catch(e) {
+  toast("Could not save. Browser storage may be full.");
+  return false;
+ }
+}
+function toast(s) {
+ $("toast").textContent=s;$("toast").style.display="block";
+ clearTimeout(toast.timer);
+ toast.timer=setTimeout(()=>$("toast").style.display="none",2500);
+}
+function go(id) {$(id).scrollIntoView({behavior:"smooth"});}
+
+function renderThemes() {
+ $("themeList").innerHTML=themes.map(t=>`
+  <button class="theme ${selectedTheme===t[0]?"active":""}" data-theme="${esc(t[0])}">
+   <span><i class="bubble" style="color:${t[2]}">${t[1]}</i>${esc(t[0])}</span>
+   <span>${stories.filter(s=>s.theme===t[0]).length}</span>
+  </button>`).join("");
+ document.querySelectorAll("[data-theme]").forEach(b=>{
+  b.classList.toggle("active",b.dataset.theme===selectedTheme);
+ });
+}
+function renderMap() {
+ const svg=$("network");
+ const visible=stories.filter(s=>selectedTheme==="All"||s.theme===selectedTheme);
+ let out="";
+ stories.forEach(s=>{
+  if(!visible.includes(s))return;
+  stories.forEach(t=>{
+   if(t.id===s.id||!visible.includes(t))return;
+   const similar=t.theme===s.theme;
+   if(!similar||s.id>t.id)return;
+   out+=`<path class="connection" stroke="${esc(s.color||"#42f0e1")}" d="M ${s.x} ${s.y} Q ${(s.x+t.x)/2} ${(s.y+t.y)/2-25} ${t.x} ${t.y}"/>`;
+  });
+ });
+ visible.forEach(s=>{
+  const chosen=s.id===selectedId;
+  out+=`<g class="node" tabindex="0" role="button" aria-label="${esc(s.title)}"
+    data-id="${esc(s.id)}">
+    <circle cx="${s.x}" cy="${s.y}" r="${chosen?30:23}"
+      fill="${esc(s.color||"#42f0e1")}" fill-opacity=".12"
+      stroke="${esc(s.color||"#42f0e1")}" stroke-width="${chosen?3:1.5}"/>
+    <circle cx="${s.x}" cy="${s.y}" r="${chosen?9:6}"
+      fill="${esc(s.color||"#42f0e1")}"/>
+    <text class="node-label" x="${s.x}" y="${s.y+42}">${s.age} · ${esc(s.stage)}</text>
+  </g>`;
+ });
+ svg.innerHTML=out;
+ svg.querySelectorAll(".node").forEach(n=>{
+  const activate=()=>selectStory(n.dataset.id);
+  n.addEventListener("click",activate);
+  n.addEventListener("keydown",e=>{
+   if(e.key==="Enter"||e.key===" "){e.preventDefault();activate();}
+  });
+ });
+ if(!visible.length)$("mapMessage").textContent="No stories in this theme yet.";
+}
+function selectStory(id) {
+ const s=stories.find(s=>s.id===id);if(!s)return;
+ selectedId=id;
+ $("mapMessage").textContent="✦ "+s.theme+" · "+s.age+" years old · "+s.stage;
+ $("selectedStory").innerHTML=`
+  <div class="tag">${esc(s.theme)}</div>
+  <h2>${esc(s.title)}</h2>
+  <p>${esc(s.text)}</p>
+  <p class="muted">◉ Age ${s.age} · ${esc(s.stage)}</p>
+  <p class="muted">⌖ ${esc(s.place||"Place not shared")}</p>
+  <p class="muted">Illustrative story or community contribution as labelled in the feed.</p>`;
+ const connected=stories.filter(t=>t.id!==id&&t.theme===s.theme)
+  .sort((a,b)=>Math.abs(a.age-s.age)-Math.abs(b.age-s.age)).slice(0,3);
+ $("connections").innerHTML=connected.length?connected.map(t=>`
+  <div class="story">
+   <div class="tag">${esc(t.theme)}</div><strong>${esc(t.age)} years · ${esc(t.stage)}</strong>
+   <h3>${esc(t.title)}</h3><p>${esc(t.text.slice(0,100))}${t.text.length>100?"…":""}</p>
+   <button class="text-button" data-open="${esc(t.id)}">Explore this experience →</button>
+  </div>`).join(""):`<p class="muted">No other story in this theme yet. More stories may create new connections.</p>`;
+ $("connections").querySelectorAll("[data-open]").forEach(b=>
+  b.addEventListener("click",()=>selectStory(b.dataset.open)));
+ renderMap();renderFeed();
+}
+function renderFeed() {
+ const q=$("search").value.trim().toLowerCase();
+ const filtered=stories.filter(s=>
+  (selectedTheme==="All"||s.theme===selectedTheme)&&
+  [s.title,s.text,s.theme,s.stage,s.place,String(s.age)].join(" ").toLowerCase().includes(q));
+ $("storyFeed").innerHTML=filtered.map(s=>`
+  <article class="story">
+   <div class="tag">${esc(s.theme)}</div><h3>${esc(s.title)}</h3>
+   <p>${esc(s.text.slice(0,135))}${s.text.length>135?"…":""}</p>
+   <div class="meta">${s.age} years · ${esc(s.stage)}</div>
+   <p class="muted">${esc(s.place||"Place not shared")}</p>
+   <button class="text-button" data-read="${esc(s.id)}">Explore story →</button>
+  </article>`).join("");
+ $("empty").classList.toggle("hidden",filtered.length>0);
+ $("storyCount").textContent=stories.length;
+ $("themeCount").textContent=new Set(stories.map(s=>s.theme)).size;
+ $("storyFeed").querySelectorAll("[data-read]").forEach(b=>
+  b.addEventListener("click",()=>{selectStory(b.dataset.read);go("map");}));
+}
+function renderReflections() {
+ $("reflectionList").innerHTML=reflections.length?reflections.map(r=>`
+  <div class="story"><p>${esc(r.text)}</p><span class="muted">Personal reflection · Stored on this device</span></div>
+ `).join(""):`<p class="muted">No reflections saved yet.</p>`;
+}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-theme]");
+ if(!b)return;
+ selectedTheme=b.dataset.theme;
+ renderThemes();renderMap();renderFeed();
+});
+$("search").addEventListener("input",renderFeed);
+
+$("storyForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const s={
+  id:"u"+Date.now(),age:Number($("age").value),stage:$("stage").value,
+  title:$("title").value.trim(),theme:$("feeling").value,
+  place:$("place").value.trim(),text:$("bodyText").value.trim(),
+  x:75+Math.random()*550,y:65+Math.random()*315,
+  color:themes.find(t=>t[0]===$("feeling").value)?.[2]||"#42f0e1",
+  illustrative:false
+ };
+ if(!s.title||!s.text||s.age<13||s.age>120)return;
+ const updated=[s,...stories];
+ if(!persist("thread-v1-stories",updated))return;
+ stories=updated;selectedTheme="All";selectedId=s.id;
+ e.target.reset();renderThemes();selectStory(s.id);
+ toast("Your experience was added to this browser's map.");
+ go("map");
+});
+
+const messageDialog=$("messageDialog");
+function openMessage() {
+ const s=stories.find(s=>s.id===selectedId);
+ $("messagePrompt").textContent=s?
+  "Reflection inspired by “"+s.title+"”. Write a kind message without sharing private information.":
+  "Write a thoughtful message inspired by an experience.";
+ messageDialog.showModal();
+}
+$("messageForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const updated=[{text:$("reflection").value.trim()},...reflections];
+ if(!updated[0].text||!persist("thread-v1-reflections",updated))return;
+ reflections=updated;e.target.reset();messageDialog.close();
+ renderReflections();toast("Reflection saved on this device.");
+});
+
+$("themeToggle").addEventListener("click",()=>{
+ document.body.classList.toggle("light");
+ try{localStorage.setItem("thread-v1-theme",
+  document.body.classList.contains("light")?"light":"dark");}catch(e){}
+});
+try {
+ if(localStorage.getItem("thread-v1-theme")==="light")
+  document.body.classList.add("light");
+} catch(e){}
+
+renderThemes();renderMap();renderReflections();selectStory(selectedId);
+</script>
+</body>
+</html>
